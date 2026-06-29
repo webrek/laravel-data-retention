@@ -1,0 +1,80 @@
+{
+    "name": "webrek/laravel-data-retention",
+    "description": "Declarative data retention for Laravel: keep records for a window, then delete or anonymize them automatically — with a compliance audit log.",
+    "keywords": [
+        "laravel",
+        "laravel-package",
+        "data-retention",
+        "retention-policy",
+        "privacy",
+        "pii",
+        "anonymization",
+        "gdpr",
+        "compliance",
+        "eloquent"
+    ],
+    "homepage": "https://github.com/webrek/laravel-data-retention",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Victor Hernandez",
+            "email": "victor@arturohernandez.com.mx"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/webrek/laravel-data-retention/issues",
+        "source": "https://github.com/webrek/laravel-data-retention",
+        "security": "https://github.com/webrek/laravel-data-retention/security/advisories/new"
+    },
+    "require": {
+        "php": "^8.2",
+        "illuminate/console": "^12.0 || ^13.0",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "infection/infection": "^0.29",
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.0 || ^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Webrek\\DataRetention\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Webrek\\DataRetention\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webrek\\DataRetention\\DataRetentionServiceProvider"
+            ],
+            "aliases": {
+                "DataRetention": "Webrek\\DataRetention\\Facades\\DataRetention"
+            }
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=512M",
+        "pint": "pint",
+        "pint:check": "pint --test"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

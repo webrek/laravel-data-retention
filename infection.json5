@@ -1,0 +1,19 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"],
+        "excludes": [
+            "DataRetentionServiceProvider.php",
+            "Facades/DataRetention.php"
+        ]
+    },
+    "mutators": {
+        "@default": true,
+        "ProtectedVisibility": false
+    },
+    "minMsi": 70,
+    "minCoveredMsi": 70,
+    "logs": {
+        "text": ".infection/infection.log"
+    }
+}

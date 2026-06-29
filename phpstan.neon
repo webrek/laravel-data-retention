@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    excludePaths:
+        - vendor/*
+    ignoreErrors:
+        # HasRetention is public API; its only users live in host apps / tests,
+        # which are outside the analysed paths.
+        - identifier: trait.unused
