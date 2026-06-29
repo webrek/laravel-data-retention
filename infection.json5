@@ -4,7 +4,10 @@
         "directories": ["src"],
         "excludes": [
             "DataRetentionServiceProvider.php",
-            "Facades/DataRetention.php"
+            "Facades/DataRetention.php",
+            "Console/RunCommand.php",
+            "Console/ListCommand.php",
+            "Models/RetentionLog.php"
         ]
     },
     "mutators": {

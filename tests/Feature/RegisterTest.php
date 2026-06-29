@@ -32,4 +32,16 @@ class RegisterTest extends TestCase
         $this->assertDatabaseMissing('audit_entries', ['id' => $old->id]);
         $this->assertDatabaseHas('audit_entries', ['id' => $recent->id]);
     }
+
+    public function test_a_register_callback_may_configure_in_place_and_return_void(): void
+    {
+        DataRetentionFacade::register(AuditEntry::class, function ($policy): void {
+            $policy->keepFor(7)->delete();
+        });
+
+        $policy = $this->app->make(DataRetention::class)->policyFor(AuditEntry::class);
+
+        $this->assertSame('delete', $policy->describeAction());
+        $this->assertSame(7, $policy->interval()->dayz);
+    }
 }
