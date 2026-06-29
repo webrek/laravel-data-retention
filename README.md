@@ -1,19 +1,21 @@
 # Laravel Data Retention
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/webrek/laravel-data-retention.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-data-retention)
-[![Total Downloads](https://img.shields.io/packagist/dt/webrek/laravel-data-retention.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-data-retention)
-[![Tests](https://img.shields.io/github/actions/workflow/status/webrek/laravel-data-retention/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/webrek/laravel-data-retention/actions/workflows/tests.yml)
-[![PHP Version](https://img.shields.io/packagist/php-v/webrek/laravel-data-retention.svg?style=flat-square)](https://php.net)
-[![License](https://img.shields.io/packagist/l/webrek/laravel-data-retention.svg?style=flat-square)](LICENSE)
+[![Última versión en Packagist](https://img.shields.io/packagist/v/webrek/laravel-data-retention.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-data-retention)
+[![Descargas totales](https://img.shields.io/packagist/dt/webrek/laravel-data-retention.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-data-retention)
+[![Pruebas](https://img.shields.io/github/actions/workflow/status/webrek/laravel-data-retention/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/webrek/laravel-data-retention/actions/workflows/tests.yml)
+[![Versión de PHP](https://img.shields.io/packagist/php-v/webrek/laravel-data-retention.svg?style=flat-square)](https://php.net)
+[![Licencia](https://img.shields.io/packagist/l/webrek/laravel-data-retention.svg?style=flat-square)](LICENSE)
 
-Declare **how long a model's rows are kept** and what happens when they age out.
-A scheduled command then purges or anonymizes the rows that are past their
-window — and records every one it touches in an audit log.
+Declara **cuánto tiempo se conservan las filas de un modelo** y qué pasa cuando
+caducan. Después, un comando programado purga o anonimiza las filas que ya
+rebasaron su ventana, y registra cada una de las que toca en una bitácora de
+auditoría.
 
-Holding personal data longer than you need to is a liability under LFPDPPP, the
-GDPR and most privacy regimes. This package turns "delete inactive customers
-after a year" or "anonymize closed tickets after 90 days" from a recurring
-manual chore into a declaration that lives next to the model and runs itself.
+Conservar datos personales más tiempo del necesario es un riesgo bajo la
+LFPDPPP, el GDPR y la mayoría de los regímenes de privacidad. Este paquete
+convierte "borrar clientes inactivos después de un año" o "anonimizar tickets
+cerrados después de 90 días" de una tarea manual recurrente a una declaración
+que vive junto al modelo y se ejecuta sola.
 
 ```php
 use Illuminate\Database\Eloquent\Model;
@@ -27,10 +29,10 @@ class Customer extends Model
     public function retentionPolicy(RetentionPolicy $policy): RetentionPolicy
     {
         return $policy
-            ->since('last_seen_at')          // measure age from this column
-            ->keepFor(365)                   // keep for a year, then…
+            ->since('last_seen_at')          // mide la antigüedad desde esta columna
+            ->keepFor(365)                   // conserva un año, luego…
             ->where(fn ($q) => $q->where('legal_hold', false))
-            ->anonymize([                    // …scrub the PII, keep the row
+            ->anonymize([                    // …limpia la PII, conserva la fila
                 'name'  => '[redacted]',
                 'email' => fn (Customer $c) => "anon+{$c->id}@example.test",
                 'phone' => null,
@@ -39,29 +41,29 @@ class Customer extends Model
 }
 ```
 
-## Install
+## Instalación
 
 ```bash
 composer require webrek/laravel-data-retention
 ```
 
-Publish and run the migration for the audit log:
+Publica y ejecuta la migración para la bitácora de auditoría:
 
 ```bash
 php artisan vendor:publish --tag=data-retention-migrations
 php artisan migrate
 ```
 
-Optionally publish the config:
+Opcionalmente publica la configuración:
 
 ```bash
 php artisan vendor:publish --tag=data-retention-config
 ```
 
-## Declaring a policy
+## Declarar una política
 
-Add the `HasRetention` trait to a model, implement `retentionPolicy()`, and list
-the model under `data-retention.models`:
+Agrega el trait `HasRetention` a un modelo, implementa `retentionPolicy()` y
+lista el modelo bajo `data-retention.models`:
 
 ```php
 // config/data-retention.php
@@ -71,36 +73,36 @@ the model under `data-retention.models`:
 ],
 ```
 
-A policy is two decisions — **how long to keep a row**, and **what to do when it
-ages out**.
+Una política son dos decisiones: **cuánto tiempo conservar una fila** y **qué
+hacer cuando caduca**.
 
-### How long
+### Cuánto tiempo
 
 ```php
 $policy
-    ->since('created_at')   // the anchor column; defaults to created_at
-    ->keepFor(30);          // an int is days…
+    ->since('created_at')   // la columna ancla; por defecto created_at
+    ->keepFor(30);          // un entero son días…
 ```
 
 ```php
 use Carbon\CarbonInterval;
 
-$policy->keepFor(CarbonInterval::months(18)); // …or any CarbonInterval
+$policy->keepFor(CarbonInterval::months(18)); // …o cualquier CarbonInterval
 ```
 
-Rows whose anchor column is `null` are **never** eligible — data the package
-can't date is data it won't touch.
+Las filas cuya columna ancla es `null` **nunca** son elegibles: los datos que el
+paquete no puede fechar son datos que no tocará.
 
-### What happens
+### Qué pasa
 
-| Action | Effect |
+| Acción | Efecto |
 | --- | --- |
-| `->delete()` | Remove the row. Soft-deletable models are soft-deleted; everything else is hard-deleted. Model events fire, so observers and cascades run. |
-| `->forceDelete()` | Permanently remove the row, bypassing soft deletes. |
-| `->anonymize([...])` | Keep the row but overwrite the listed columns. |
+| `->delete()` | Elimina la fila. Los modelos con soft delete se marcan como eliminados (soft-deleted); todo lo demás se borra de forma definitiva (hard delete). Los eventos del modelo se disparan, así que se ejecutan los observers y las cascadas. |
+| `->forceDelete()` | Elimina la fila de forma permanente, ignorando el soft delete. |
+| `->anonymize([...])` | Conserva la fila pero sobrescribe las columnas indicadas. |
 
-`anonymize()` takes a column => value map. Each value is a literal or a closure
-that receives the model:
+`anonymize()` recibe un mapa de columna => valor. Cada valor es un literal o un
+closure que recibe el modelo:
 
 ```php
 $policy->anonymize([
@@ -110,15 +112,16 @@ $policy->anonymize([
 ], markColumn: 'anonymized_at');
 ```
 
-Pass a **`markColumn`** (a nullable timestamp) and the runner stamps it, then
-skips already-anonymized rows on later runs — so the job stays cheap and
-idempotent. Without one, anonymization simply re-applies the same values each
-run.
+Pasa una **`markColumn`** (un timestamp nullable) y el runner la sella, después
+omite las filas ya anonimizadas en ejecuciones posteriores, de modo que el job
+se mantiene barato e idempotente. Sin ella, la anonimización simplemente vuelve
+a aplicar los mismos valores en cada ejecución.
 
-## Legal holds and scoping
+## Legal holds y acotamiento
 
-`where()` adds constraints to the eligibility query. Use it to exempt records
-under a litigation hold, or to scope a policy to part of a table:
+`where()` agrega restricciones a la consulta de elegibilidad. Úsalo para eximir
+registros bajo un legal hold por litigio, o para acotar una política a una parte
+de la tabla:
 
 ```php
 $policy
@@ -128,10 +131,11 @@ $policy
     ->delete();
 ```
 
-## Purging soft-deleted rows
+## Purgar filas con soft delete
 
-A common need is to *permanently* clear records some time after they were
-trashed. Anchor on `deleted_at`, opt the trashed rows in, and force-delete:
+Una necesidad común es limpiar *de forma permanente* los registros un tiempo
+después de haberlos enviado a la papelera. Ancla en `deleted_at`, incluye las
+filas en la papelera y haz force delete:
 
 ```php
 $policy
@@ -141,10 +145,10 @@ $policy
     ->forceDelete();
 ```
 
-## Models you can't edit
+## Modelos que no puedes editar
 
-For a vendor or framework model you can't add the trait to, register a policy
-from a service provider:
+Para un modelo de un vendor o del framework al que no puedes agregar el trait,
+registra una política desde un service provider:
 
 ```php
 use Webrek\DataRetention\Facades\DataRetention;
@@ -154,17 +158,17 @@ DataRetention::register(\Spatie\Activitylog\Models\Activity::class, fn ($policy)
 );
 ```
 
-## Running it
+## Ejecutarlo
 
 ```bash
-php artisan retention:run                 # run every configured policy
-php artisan retention:run --dry-run       # report what would change, change nothing
+php artisan retention:run                 # corre todas las políticas configuradas
+php artisan retention:run --dry-run       # reporta qué cambiaría, sin cambiar nada
 php artisan retention:run --model="App\Models\Customer"
-php artisan retention:list                # show configured policies
+php artisan retention:list                # muestra las políticas configuradas
 ```
 
-Schedule it however you schedule the rest of your maintenance. Daily, off-peak,
-is typical:
+Prográmalo como programes el resto de tu mantenimiento. Lo típico es a diario,
+fuera de las horas pico:
 
 ```php
 // routes/console.php
@@ -173,33 +177,35 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('retention:run')->dailyAt('03:00');
 ```
 
-The runner pages through eligible rows by primary key, so an interrupted run
-simply resumes on the next pass rather than starting over or skipping rows.
+El runner pagina las filas elegibles por llave primaria, así que una ejecución
+interrumpida simplemente continúa en la siguiente pasada en lugar de empezar de
+cero u omitir filas.
 
-## The audit log
+## La bitácora de auditoría
 
-Every row a policy touches is written to `data_retention_log`: the policy name,
-the action, the model and key, the columns affected (for anonymization) and
-when it happened. That is the evidence a data-protection review expects — proof
-that retention rules ran and what they did.
+Cada fila que toca una política se escribe en `data_retention_log`: el nombre de
+la política, la acción, el modelo y la llave, las columnas afectadas (para la
+anonimización) y cuándo ocurrió. Esa es la evidencia que espera una revisión de
+protección de datos: la prueba de que las reglas de retención se ejecutaron y de
+qué hicieron.
 
-Each policy run also fires a `Webrek\DataRetention\Events\RecordsRetained` event
-carrying a `RetentionResult`, so you can forward outcomes to your own metrics or
-alerting.
+Cada ejecución de una política también dispara un evento
+`Webrek\DataRetention\Events\RecordsRetained` que lleva un `RetentionResult`,
+para que puedas reenviar los resultados a tus propias métricas o alertas.
 
-Disable the log in config if you keep that evidence elsewhere:
+Desactiva la bitácora en la configuración si guardas esa evidencia en otro lado:
 
 ```php
 'logging' => ['enabled' => false],
 ```
 
-## Configuration
+## Configuración
 
 ```php
 return [
-    'connection' => env('DATA_RETENTION_CONNECTION'), // audit-log connection
-    'models'     => [/* models with a HasRetention policy */],
-    'chunk'      => 500,                              // rows per batch
+    'connection' => env('DATA_RETENTION_CONNECTION'), // conexión de la bitácora de auditoría
+    'models'     => [/* modelos con una política HasRetention */],
+    'chunk'      => 500,                              // filas por lote
     'logging'    => [
         'enabled'    => true,
         'table'      => 'data_retention_log',
@@ -208,22 +214,22 @@ return [
 ];
 ```
 
-## Testing
+## Pruebas
 
 ```bash
 composer test
 ```
 
-## Contributing
+## Contribuir
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Run `make check` before opening a PR.
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md). Ejecuta `make check` antes de abrir un PR.
 
-## Security
+## Seguridad
 
-Please report vulnerabilities through the
-[security advisory form](https://github.com/webrek/laravel-data-retention/security/advisories/new),
-not as public issues. See [SECURITY.md](SECURITY.md).
+Por favor reporta las vulnerabilidades a través del
+[formulario de aviso de seguridad](https://github.com/webrek/laravel-data-retention/security/advisories/new),
+no como issues públicos. Consulta [SECURITY.md](SECURITY.md).
 
-## License
+## Licencia
 
-The MIT License (MIT). See [LICENSE](LICENSE).
+La Licencia MIT (MIT). Consulta [LICENSE](LICENSE).
